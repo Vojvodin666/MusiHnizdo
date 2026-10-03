@@ -21,7 +21,7 @@ export class Player {
   }
 
   receiveFly(fly) {
-    this.activeFly = fly;
+    this.activeFly = { ...fly, timeLeft: fly.duration };
   }
 
   handleAction(action) {
@@ -43,14 +43,88 @@ export class Player {
     if (this.swingTimer > 0) {
       this.swingTimer = Math.max(0, this.swingTimer - dt);
     }
-    // TODO: advance fly timers, mark missed flies
+
+    if (this.activeFly) {
+      this.activeFly.timeLeft -= dt;
+      if (this.activeFly.timeLeft <= 0) {
+        this.activeFly = null;
+      }
+    }
   }
 
   render() {
     const { ctx, canvas } = this;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     this.drawCharacter();
-    // TODO: draw active fly
+    this.drawFly();
+  }
+
+  drawFly() {
+    if (!this.activeFly) return;
+
+    const { ctx, canvas, activeFly } = this;
+    const cx = canvas.width / 2;
+    const zoneY = canvas.height * 0.32;
+    const radius = 45;
+    const fraction = Math.max(0, activeFly.timeLeft / activeFly.duration);
+    const isDecoy = activeFly.type === 'decoy';
+
+    ctx.beginPath();
+    ctx.arc(cx, zoneY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = isDecoy ? 'rgba(255, 213, 79, 0.35)' : 'rgba(255, 241, 118, 0.35)';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(cx, zoneY);
+    ctx.arc(cx, zoneY, radius, -Math.PI / 2, -Math.PI / 2 + fraction * Math.PI * 2);
+    ctx.lineTo(cx, zoneY);
+    ctx.fillStyle = isDecoy ? 'rgba(251, 140, 0, 0.5)' : 'rgba(251, 192, 45, 0.5)';
+    ctx.fill();
+
+    if (isDecoy) {
+      this.drawBee(cx, zoneY);
+    } else {
+      this.drawFlySprite(cx, zoneY);
+    }
+  }
+
+  drawFlySprite(x, y) {
+    const { ctx } = this;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.strokeStyle = 'rgba(80, 80, 80, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(x - 6, y - 5, 8, 4, -0.4, 0, Math.PI * 2);
+    ctx.ellipse(x + 6, y - 5, 8, 4, 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.ellipse(x, y, 10, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  drawBee(x, y) {
+    const { ctx } = this;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.strokeStyle = 'rgba(80, 80, 80, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(x - 6, y - 8, 8, 4, -0.4, 0, Math.PI * 2);
+    ctx.ellipse(x + 6, y - 8, 8, 4, 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#fbc02d';
+    ctx.beginPath();
+    ctx.ellipse(x, y, 12, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#333';
+    ctx.fillRect(x - 10, y - 4, 4, 8);
+    ctx.fillRect(x - 2, y - 4, 4, 8);
+    ctx.fillRect(x + 6, y - 4, 4, 8);
   }
 
   drawCharacter() {

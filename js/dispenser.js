@@ -1,5 +1,6 @@
 const GIFT_DURATION = 2.6;
 const CROSS_CHANCE = 0.2;
+const WASP_CHANCE = 0.25;
 
 const OPPOSITE_SIDE = { left: 'right', right: 'left' };
 
@@ -47,6 +48,7 @@ export class Dispenser {
       type: 'normal',
       duration: 1.8,
       fromSibling,
+      species: Math.random() < WASP_CHANCE ? 'wasp' : 'fly',
     };
   }
 

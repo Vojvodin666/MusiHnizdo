@@ -2,6 +2,7 @@ import { Player } from './player.js';
 import { Dispenser } from './dispenser.js';
 import { InputHandler } from './input.js';
 import { showCelebration, hideCelebration, onPlayAgain } from './celebration.js';
+import { ensureAudio, playSwat, stopBuzz } from './audio.js';
 
 const ROUND_SECONDS = 60;
 const MAX_DT = 0.1;
@@ -17,7 +18,11 @@ export class Game {
     this.players.right.onMiss = () => this.dispenser.queueGift('left');
 
     this.input = new InputHandler();
-    this.input.onAction((side, action) => this.players[side].handleAction(action));
+    this.input.onAction((side, action) => {
+      ensureAudio();
+      if (action === 'swat') playSwat();
+      this.players[side].handleAction(action);
+    });
 
     this.timeLeft = ROUND_SECONDS;
     this.lastTimestamp = null;

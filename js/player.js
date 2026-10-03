@@ -152,15 +152,39 @@ export class Player {
     if (!this.activeFly) return;
 
     const { activeFly } = this;
-    const { x, y, type } = activeFly;
-    const isDecoy = type === 'decoy';
+    const { x, y, species } = activeFly;
     const isGift = Boolean(activeFly.isGift);
 
-    if (isDecoy) {
-      this.drawBee(x, y);
+    if (species === 'wasp' && !isGift) {
+      this.drawWasp(x, y);
     } else {
       this.drawFlySprite(x, y, isGift);
     }
+  }
+
+  drawInsectWings(x, y, scale) {
+    const { ctx } = this;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.strokeStyle = 'rgba(80, 80, 80, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(x + 1 * scale, y - 7 * scale, 10 * scale, 5 * scale, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  drawInsectLegs(x, y, scale) {
+    const { ctx } = this;
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1.2 * scale;
+    ctx.beginPath();
+    ctx.moveTo(x + 3 * scale, y + 3 * scale);
+    ctx.lineTo(x + 5 * scale, y + 9 * scale);
+    ctx.moveTo(x - 2 * scale, y + 4 * scale);
+    ctx.lineTo(x - 1 * scale, y + 10 * scale);
+    ctx.moveTo(x - 7 * scale, y + 4 * scale);
+    ctx.lineTo(x - 9 * scale, y + 9 * scale);
+    ctx.stroke();
   }
 
   drawFlySprite(x, y, isGift = false) {
@@ -168,92 +192,111 @@ export class Player {
     const scale = isGift ? 1.6 : 1;
     const bodyColor = isGift ? '#c9a227' : '#333';
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-    ctx.strokeStyle = 'rgba(80, 80, 80, 0.6)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.ellipse(x - 6 * scale, y - 5 * scale, 8 * scale, 4 * scale, -0.4, 0, Math.PI * 2);
-    ctx.ellipse(x + 6 * scale, y - 5 * scale, 8 * scale, 4 * scale, 0.4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
+    this.drawInsectWings(x, y, scale);
+    this.drawInsectLegs(x, y, scale);
 
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
-    ctx.ellipse(x, y, 10 * scale, 7 * scale, 0, 0, Math.PI * 2);
+    ctx.ellipse(x - 7 * scale, y + 1 * scale, 10 * scale, 6 * scale, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    const headX = x;
-    const headY = y - 10 * scale;
+    ctx.beginPath();
+    ctx.arc(x + 2 * scale, y, 4.5 * scale, 0, Math.PI * 2);
+    ctx.fill();
+
+    const headX = x + 10 * scale;
+    const headY = y - 1 * scale;
     const headRadius = 5 * scale;
     ctx.beginPath();
     ctx.arc(headX, headY, headRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    const eyeRadius = 2.6 * scale;
-    const eyeOffsetX = 2.8 * scale;
-    ctx.fillStyle = '#b71c1c';
+    ctx.strokeStyle = bodyColor;
+    ctx.lineWidth = scale;
     ctx.beginPath();
-    ctx.arc(headX - eyeOffsetX, headY - 1 * scale, eyeRadius, 0, Math.PI * 2);
-    ctx.arc(headX + eyeOffsetX, headY - 1 * scale, eyeRadius, 0, Math.PI * 2);
+    ctx.moveTo(headX + scale, headY - 4 * scale);
+    ctx.quadraticCurveTo(headX + 6 * scale, headY - 9 * scale, headX + 8 * scale, headY - 10 * scale);
+    ctx.stroke();
+    ctx.fillStyle = bodyColor;
+    ctx.beginPath();
+    ctx.arc(headX + 8 * scale, headY - 10 * scale, 1.2 * scale, 0, Math.PI * 2);
     ctx.fill();
 
+    ctx.fillStyle = '#b71c1c';
+    ctx.beginPath();
+    ctx.arc(headX + 1 * scale, headY - 1 * scale, 3 * scale, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.beginPath();
-    ctx.arc(headX - eyeOffsetX + scale, headY - 2 * scale, eyeRadius * 0.35, 0, Math.PI * 2);
-    ctx.arc(headX + eyeOffsetX + scale, headY - 2 * scale, eyeRadius * 0.35, 0, Math.PI * 2);
+    ctx.arc(headX + 2 * scale, headY - 2 * scale, scale, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.strokeStyle = bodyColor;
-    ctx.lineWidth = 1.5 * scale;
+    ctx.lineWidth = 1.3 * scale;
     ctx.beginPath();
-    ctx.moveTo(headX, headY + headRadius * 0.5);
-    ctx.lineTo(headX, headY + headRadius * 0.5 + 5 * scale);
+    ctx.moveTo(headX + 4 * scale, headY + 3 * scale);
+    ctx.lineTo(headX + 8 * scale, headY + 6 * scale);
     ctx.stroke();
   }
 
-  drawBee(x, y) {
+  drawWasp(x, y) {
     const { ctx } = this;
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-    ctx.strokeStyle = 'rgba(80, 80, 80, 0.6)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.ellipse(x - 6, y - 8, 8, 4, -0.4, 0, Math.PI * 2);
-    ctx.ellipse(x + 6, y - 8, 8, 4, 0.4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
+    this.drawInsectWings(x, y, 1);
+    this.drawInsectLegs(x, y, 1);
 
     ctx.save();
     ctx.beginPath();
-    ctx.ellipse(x, y, 12, 9, 0, 0, Math.PI * 2);
+    ctx.moveTo(x + 2, y - 5);
+    ctx.quadraticCurveTo(x - 6, y - 7, x - 16, y);
+    ctx.quadraticCurveTo(x - 6, y + 7, x + 2, y + 5);
+    ctx.closePath();
     ctx.clip();
     ctx.fillStyle = '#fbc02d';
-    ctx.fillRect(x - 12, y - 9, 24, 18);
+    ctx.fillRect(x - 18, y - 8, 22, 16);
     ctx.fillStyle = '#333';
-    for (let sx = x - 9; sx <= x + 9; sx += 8) {
-      ctx.fillRect(sx, y - 9, 4, 18);
+    for (let sx = x - 15; sx <= x + 2; sx += 6) {
+      ctx.fillRect(sx, y - 8, 3, 16);
     }
     ctx.restore();
 
-    const headX = x;
-    const headY = y - 11;
-    const headRadius = 5;
     ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(x + 3, y, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    const headX = x + 11;
+    const headY = y - 1;
+    const headRadius = 5;
     ctx.beginPath();
     ctx.arc(headX, headY, headRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(headX - 2, headY - 1, 1.6, 0, Math.PI * 2);
-    ctx.arc(headX + 2, headY - 1, 1.6, 0, Math.PI * 2);
+    ctx.moveTo(headX + 1, headY - 4);
+    ctx.quadraticCurveTo(headX + 6, headY - 9, headX + 8, headY - 10);
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(headX + 8, headY - 10, 1.2, 0, Math.PI * 2);
     ctx.fill();
 
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(headX + 1, headY - 1, 2.2, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#222';
     ctx.beginPath();
-    ctx.arc(headX - 2, headY - 1, 0.8, 0, Math.PI * 2);
-    ctx.arc(headX + 2, headY - 1, 0.8, 0, Math.PI * 2);
+    ctx.arc(headX + 1.8, headY - 1, 1.1, 0, Math.PI * 2);
     ctx.fill();
+
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(headX + 2, headY + 2, 2, 0.1 * Math.PI, 0.6 * Math.PI);
+    ctx.stroke();
   }
 
   drawCharacter() {

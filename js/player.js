@@ -1,5 +1,12 @@
 const SWING_DURATION = 0.25;
-const FLIGHT_DURATION = 0.45;
+const FLIGHT_DURATION = 1.3;
+const WOBBLE_AMOUNT = 22;
+
+const LANDING_SPOTS = [
+  { xFrac: 0.3, yFrac: 0.22 },
+  { xFrac: 0.7, yFrac: 0.18 },
+  { xFrac: 0.5, yFrac: 0.36 },
+];
 
 const HAIR_COLORS = {
   left: '#f2cf7e',
@@ -24,12 +31,16 @@ export class Player {
 
   receiveFly(fly) {
     const { canvas } = this;
-    const landX = 50 + Math.random() * (canvas.width - 100);
-    const landY = canvas.height * 0.15 + Math.random() * (canvas.height * 0.35);
+    const spot = LANDING_SPOTS[Math.floor(Math.random() * LANDING_SPOTS.length)];
+    const landX = spot.xFrac * canvas.width;
+    const landY = spot.yFrac * canvas.height;
 
     let startX;
     let startY;
-    if (Math.random() < 0.5) {
+    if (fly.fromSibling) {
+      startX = this.side === 'left' ? canvas.width + 30 : -30;
+      startY = landY;
+    } else if (Math.random() < 0.5) {
       startX = Math.random() < 0.5 ? -30 : canvas.width + 30;
       startY = landY;
     } else {
@@ -41,6 +52,7 @@ export class Player {
       ...fly,
       phase: 'flying',
       flightTime: 0,
+      wobbleSeed: Math.random() * Math.PI * 2,
       startX,
       startY,
       landX,
@@ -77,10 +89,23 @@ export class Player {
     if (fly.phase === 'flying') {
       fly.flightTime += dt;
       const t = Math.min(1, fly.flightTime / FLIGHT_DURATION);
-      fly.x = fly.startX + (fly.landX - fly.startX) * t;
-      fly.y = fly.startY + (fly.landY - fly.startY) * t;
+      const baseX = fly.startX + (fly.landX - fly.startX) * t;
+      const baseY = fly.startY + (fly.landY - fly.startY) * t;
+
+      const dx = fly.landX - fly.startX;
+      const dy = fly.landY - fly.startY;
+      const len = Math.hypot(dx, dy) || 1;
+      const perpX = -dy / len;
+      const perpY = dx / len;
+      const wobble = Math.sin(t * Math.PI) * Math.sin(fly.wobbleSeed + fly.flightTime * 6) * WOBBLE_AMOUNT;
+
+      fly.x = baseX + perpX * wobble;
+      fly.y = baseY + perpY * wobble;
+
       if (t >= 1) {
         fly.phase = 'sitting';
+        fly.x = fly.landX;
+        fly.y = fly.landY;
       }
     } else {
       fly.timeLeft -= dt;
@@ -94,8 +119,35 @@ export class Player {
   render() {
     const { ctx, canvas } = this;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    this.drawFlowers();
     this.drawCharacter();
     this.drawFly();
+  }
+
+  drawFlowers() {
+    const { canvas } = this;
+    for (const spot of LANDING_SPOTS) {
+      this.drawFlower(spot.xFrac * canvas.width, spot.yFrac * canvas.height);
+    }
+  }
+
+  drawFlower(x, y) {
+    const { ctx } = this;
+    const petalOffsets = [
+      [0, -10], [9, -3], [6, 8], [-6, 8], [-9, -3],
+    ];
+
+    ctx.fillStyle = '#f48fb1';
+    for (const [ox, oy] of petalOffsets) {
+      ctx.beginPath();
+      ctx.arc(x + ox, y + oy, 7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#ffd54f';
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   drawFly() {

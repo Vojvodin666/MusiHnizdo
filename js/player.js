@@ -1,6 +1,7 @@
 const SWING_DURATION = 0.25;
 const FLIGHT_DURATION = 1.3;
 const WOBBLE_AMOUNT = 22;
+const SPLAT_DURATION = 1;
 
 const LANDING_SPOTS = [
   { xFrac: 0.3, yFrac: 0.22 },
@@ -31,6 +32,7 @@ export class Player {
     this.ctx = canvas.getContext('2d');
     this.score = 0;
     this.activeFly = null;
+    this.splat = null;
     this.swingTimer = 0;
     this.onMiss = null;
   }
@@ -59,6 +61,7 @@ export class Player {
       phase: 'flying',
       flightTime: 0,
       wobbleSeed: Math.random() * Math.PI * 2,
+      facingRight: landX >= startX,
       startX,
       startY,
       landX,
@@ -78,6 +81,7 @@ export class Player {
 
     if (action === 'swat' && this.activeFly.type === 'normal') {
       this.score += this.activeFly.isGift ? 2 : 1;
+      this.splat = { x: this.activeFly.x, y: this.activeFly.y, timeLeft: SPLAT_DURATION };
       this.activeFly = null;
     }
   }
@@ -85,6 +89,13 @@ export class Player {
   update(dt) {
     if (this.swingTimer > 0) {
       this.swingTimer = Math.max(0, this.swingTimer - dt);
+    }
+
+    if (this.splat) {
+      this.splat.timeLeft -= dt;
+      if (this.splat.timeLeft <= 0) {
+        this.splat = null;
+      }
     }
 
     const fly = this.activeFly;
@@ -126,6 +137,39 @@ export class Player {
     this.drawFlowers();
     this.drawCharacter();
     this.drawFly();
+    this.drawSplat();
+  }
+
+  drawSplat() {
+    if (!this.splat) return;
+
+    const { ctx, splat } = this;
+    const { x, y, timeLeft } = splat;
+
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, timeLeft / SPLAT_DURATION);
+    ctx.fillStyle = '#6d4c41';
+
+    const blobs = [
+      [0, 0, 9], [8, -4, 6], [-7, 5, 6], [5, 7, 5], [-6, -6, 5], [9, 4, 4], [-9, -2, 4],
+    ];
+    for (const [ox, oy, r] of blobs) {
+      ctx.beginPath();
+      ctx.arc(x + ox, y + oy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.strokeStyle = '#6d4c41';
+    ctx.lineWidth = 2;
+    const streaks = [[-16, -10], [16, -8], [-14, 12], [15, 11], [0, -16], [0, 16]];
+    for (const [dx, dy] of streaks) {
+      ctx.beginPath();
+      ctx.moveTo(x + dx * 0.4, y + dy * 0.4);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+    }
+
+    ctx.restore();
   }
 
   drawFlowers() {
@@ -157,15 +201,24 @@ export class Player {
   drawFly() {
     if (!this.activeFly) return;
 
-    const { activeFly } = this;
-    const { x, y, species } = activeFly;
+    const { ctx, activeFly } = this;
+    const { x, y, species, facingRight } = activeFly;
     const isGift = Boolean(activeFly.isGift);
+
+    ctx.save();
+    if (!facingRight) {
+      ctx.translate(x, 0);
+      ctx.scale(-1, 1);
+      ctx.translate(-x, 0);
+    }
 
     if (species === 'wasp' && !isGift) {
       this.drawWasp(x, y);
     } else {
       this.drawFlySprite(x, y, isGift);
     }
+
+    ctx.restore();
   }
 
   drawInsectWings(x, y, scale) {

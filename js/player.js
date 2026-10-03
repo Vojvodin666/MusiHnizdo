@@ -1,4 +1,5 @@
 const SWING_DURATION = 0.25;
+const FLIGHT_DURATION = 0.45;
 
 const HAIR_COLORS = {
   left: '#f2cf7e',
@@ -18,10 +19,36 @@ export class Player {
     this.score = 0;
     this.activeFly = null;
     this.swingTimer = 0;
+    this.onMiss = null;
   }
 
   receiveFly(fly) {
-    this.activeFly = { ...fly, timeLeft: fly.duration };
+    const { canvas } = this;
+    const landX = 50 + Math.random() * (canvas.width - 100);
+    const landY = canvas.height * 0.15 + Math.random() * (canvas.height * 0.35);
+
+    let startX;
+    let startY;
+    if (Math.random() < 0.5) {
+      startX = Math.random() < 0.5 ? -30 : canvas.width + 30;
+      startY = landY;
+    } else {
+      startX = landX;
+      startY = -30;
+    }
+
+    this.activeFly = {
+      ...fly,
+      phase: 'flying',
+      flightTime: 0,
+      startX,
+      startY,
+      landX,
+      landY,
+      x: startX,
+      y: startY,
+      timeLeft: fly.duration,
+    };
   }
 
   handleAction(action) {
@@ -29,10 +56,10 @@ export class Player {
       this.swingTimer = SWING_DURATION;
     }
 
-    if (!this.activeFly) return;
+    if (!this.activeFly || this.activeFly.phase !== 'sitting') return;
 
     if (action === 'swat' && this.activeFly.type === 'normal') {
-      this.score += 1;
+      this.score += this.activeFly.isGift ? 2 : 1;
       this.activeFly = null;
     } else if (action === 'avoid' && this.activeFly.type === 'decoy') {
       this.activeFly = null;
@@ -44,10 +71,22 @@ export class Player {
       this.swingTimer = Math.max(0, this.swingTimer - dt);
     }
 
-    if (this.activeFly) {
-      this.activeFly.timeLeft -= dt;
-      if (this.activeFly.timeLeft <= 0) {
+    const fly = this.activeFly;
+    if (!fly) return;
+
+    if (fly.phase === 'flying') {
+      fly.flightTime += dt;
+      const t = Math.min(1, fly.flightTime / FLIGHT_DURATION);
+      fly.x = fly.startX + (fly.landX - fly.startX) * t;
+      fly.y = fly.startY + (fly.landY - fly.startY) * t;
+      if (t >= 1) {
+        fly.phase = 'sitting';
+      }
+    } else {
+      fly.timeLeft -= dt;
+      if (fly.timeLeft <= 0) {
         this.activeFly = null;
+        if (this.onMiss) this.onMiss(fly);
       }
     }
   }
@@ -62,46 +101,55 @@ export class Player {
   drawFly() {
     if (!this.activeFly) return;
 
-    const { ctx, canvas, activeFly } = this;
-    const cx = canvas.width / 2;
-    const zoneY = canvas.height * 0.32;
-    const radius = 45;
-    const fraction = Math.max(0, activeFly.timeLeft / activeFly.duration);
-    const isDecoy = activeFly.type === 'decoy';
+    const { ctx, activeFly } = this;
+    const { x, y, type, phase } = activeFly;
+    const isDecoy = type === 'decoy';
+    const isGift = Boolean(activeFly.isGift);
 
-    ctx.beginPath();
-    ctx.arc(cx, zoneY, radius, 0, Math.PI * 2);
-    ctx.fillStyle = isDecoy ? 'rgba(255, 213, 79, 0.35)' : 'rgba(255, 241, 118, 0.35)';
-    ctx.fill();
+    if (phase === 'sitting') {
+      const radius = isGift ? 60 : 45;
+      const fraction = Math.max(0, activeFly.timeLeft / activeFly.duration);
 
-    ctx.beginPath();
-    ctx.moveTo(cx, zoneY);
-    ctx.arc(cx, zoneY, radius, -Math.PI / 2, -Math.PI / 2 + fraction * Math.PI * 2);
-    ctx.lineTo(cx, zoneY);
-    ctx.fillStyle = isDecoy ? 'rgba(251, 140, 0, 0.5)' : 'rgba(251, 192, 45, 0.5)';
-    ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = isGift
+        ? 'rgba(255, 193, 7, 0.4)'
+        : isDecoy ? 'rgba(255, 213, 79, 0.35)' : 'rgba(255, 241, 118, 0.35)';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.arc(x, y, radius, -Math.PI / 2, -Math.PI / 2 + fraction * Math.PI * 2);
+      ctx.lineTo(x, y);
+      ctx.fillStyle = isGift
+        ? 'rgba(255, 152, 0, 0.55)'
+        : isDecoy ? 'rgba(251, 140, 0, 0.5)' : 'rgba(251, 192, 45, 0.5)';
+      ctx.fill();
+    }
 
     if (isDecoy) {
-      this.drawBee(cx, zoneY);
+      this.drawBee(x, y);
     } else {
-      this.drawFlySprite(cx, zoneY);
+      this.drawFlySprite(x, y, isGift);
     }
   }
 
-  drawFlySprite(x, y) {
+  drawFlySprite(x, y, isGift = false) {
     const { ctx } = this;
+    const scale = isGift ? 1.6 : 1;
+
     ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
     ctx.strokeStyle = 'rgba(80, 80, 80, 0.6)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.ellipse(x - 6, y - 5, 8, 4, -0.4, 0, Math.PI * 2);
-    ctx.ellipse(x + 6, y - 5, 8, 4, 0.4, 0, Math.PI * 2);
+    ctx.ellipse(x - 6 * scale, y - 5 * scale, 8 * scale, 4 * scale, -0.4, 0, Math.PI * 2);
+    ctx.ellipse(x + 6 * scale, y - 5 * scale, 8 * scale, 4 * scale, 0.4, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = '#333';
+    ctx.fillStyle = isGift ? '#c9a227' : '#333';
     ctx.beginPath();
-    ctx.ellipse(x, y, 10, 7, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y, 10 * scale, 7 * scale, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 

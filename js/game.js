@@ -3,6 +3,7 @@ import { Dispenser } from './dispenser.js';
 import { InputHandler } from './input.js';
 
 const ROUND_SECONDS = 60;
+const MAX_DT = 0.1;
 
 export class Game {
   constructor(leftCanvas, rightCanvas) {
@@ -11,6 +12,9 @@ export class Game {
       right: new Player('right', rightCanvas),
     };
     this.dispenser = new Dispenser(Object.values(this.players));
+    this.players.left.onMiss = () => this.dispenser.queueGift('right');
+    this.players.right.onMiss = () => this.dispenser.queueGift('left');
+
     this.input = new InputHandler();
     this.input.onAction((side, action) => this.players[side].handleAction(action));
 
@@ -23,7 +27,7 @@ export class Game {
   }
 
   loop(timestamp) {
-    const dt = this.lastTimestamp ? (timestamp - this.lastTimestamp) / 1000 : 0;
+    const dt = this.lastTimestamp ? Math.min((timestamp - this.lastTimestamp) / 1000, MAX_DT) : 0;
     this.lastTimestamp = timestamp;
 
     this.timeLeft -= dt;

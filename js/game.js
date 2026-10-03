@@ -1,6 +1,7 @@
 import { Player } from './player.js';
 import { Dispenser } from './dispenser.js';
 import { InputHandler } from './input.js';
+import { showCelebration, hideCelebration, onPlayAgain } from './celebration.js';
 
 const ROUND_SECONDS = 60;
 const MAX_DT = 0.1;
@@ -20,6 +21,8 @@ export class Game {
 
     this.timeLeft = ROUND_SECONDS;
     this.lastTimestamp = null;
+
+    onPlayAgain(() => this.restart());
   }
 
   start() {
@@ -46,6 +49,18 @@ export class Game {
   }
 
   endRound() {
-    // TODO: show shared celebration screen
+    const totalScore = this.players.left.score + this.players.right.score;
+    showCelebration(totalScore);
+  }
+
+  restart() {
+    hideCelebration();
+    this.timeLeft = ROUND_SECONDS;
+    this.lastTimestamp = null;
+    for (const player of Object.values(this.players)) {
+      player.score = 0;
+      player.activeFly = null;
+    }
+    this.start();
   }
 }

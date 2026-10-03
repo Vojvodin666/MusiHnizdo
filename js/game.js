@@ -54,8 +54,13 @@ export class Game {
   }
 
   endRound() {
-    const totalScore = this.players.left.score + this.players.right.score;
-    showCelebration(totalScore);
+    stopBuzz();
+    showCelebration({
+      leftName: this.players.left.name,
+      leftScore: this.players.left.score,
+      rightName: this.players.right.name,
+      rightScore: this.players.right.score,
+    });
   }
 
   restart() {

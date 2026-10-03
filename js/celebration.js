@@ -6,8 +6,12 @@ const confettiLayer = document.getElementById('confetti-layer');
 const messageEl = document.getElementById('celebration-message');
 const playAgainButton = document.getElementById('play-again');
 
-export function showCelebration(totalScore) {
-  messageEl.textContent = `Spolu jste chytily ${totalScore} much!`;
+export function showCelebration({ leftName, leftScore, rightName, rightScore }) {
+  const total = leftScore + rightScore;
+  messageEl.innerHTML =
+    `${leftName}: ${leftScore} much<br>` +
+    `${rightName}: ${rightScore} much<br>` +
+    `<strong>Dohromady: ${total} much!</strong>`;
   overlay.classList.add('visible');
   spawnConfetti();
 }

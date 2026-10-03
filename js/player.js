@@ -18,9 +18,15 @@ const DRESS_COLORS = {
   right: '#64b5f6',
 };
 
+const NAMES = {
+  left: 'Klárka',
+  right: 'Eminka',
+};
+
 export class Player {
   constructor(side, canvas) {
     this.side = side;
+    this.name = NAMES[side];
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.score = 0;

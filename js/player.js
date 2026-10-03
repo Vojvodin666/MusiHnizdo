@@ -153,31 +153,10 @@ export class Player {
   drawFly() {
     if (!this.activeFly) return;
 
-    const { ctx, activeFly } = this;
-    const { x, y, type, phase } = activeFly;
+    const { activeFly } = this;
+    const { x, y, type } = activeFly;
     const isDecoy = type === 'decoy';
     const isGift = Boolean(activeFly.isGift);
-
-    if (phase === 'sitting') {
-      const radius = isGift ? 60 : 45;
-      const fraction = Math.max(0, activeFly.timeLeft / activeFly.duration);
-
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = isGift
-        ? 'rgba(255, 193, 7, 0.4)'
-        : isDecoy ? 'rgba(255, 213, 79, 0.35)' : 'rgba(255, 241, 118, 0.35)';
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.arc(x, y, radius, -Math.PI / 2, -Math.PI / 2 + fraction * Math.PI * 2);
-      ctx.lineTo(x, y);
-      ctx.fillStyle = isGift
-        ? 'rgba(255, 152, 0, 0.55)'
-        : isDecoy ? 'rgba(251, 140, 0, 0.5)' : 'rgba(251, 192, 45, 0.5)';
-      ctx.fill();
-    }
 
     if (isDecoy) {
       this.drawBee(x, y);

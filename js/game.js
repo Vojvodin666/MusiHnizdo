@@ -9,6 +9,7 @@ const MAX_DT = 0.1;
 
 export class Game {
   constructor(leftCanvas, rightCanvas) {
+    this.timerEl = document.getElementById('timer');
     this.players = {
       left: new Player('left', leftCanvas),
       right: new Player('right', rightCanvas),
@@ -44,6 +45,8 @@ export class Game {
       return;
     }
 
+    this.timerEl.textContent = Math.ceil(this.timeLeft);
+
     this.dispenser.tick(dt);
     for (const player of Object.values(this.players)) {
       player.update(dt);
@@ -55,6 +58,7 @@ export class Game {
 
   endRound() {
     stopBuzz();
+    this.timerEl.style.display = 'none';
     showCelebration({
       leftName: this.players.left.name,
       leftScore: this.players.left.score,
@@ -65,6 +69,7 @@ export class Game {
 
   restart() {
     hideCelebration();
+    this.timerEl.style.display = '';
     this.timeLeft = ROUND_SECONDS;
     this.lastTimestamp = null;
     for (const player of Object.values(this.players)) {

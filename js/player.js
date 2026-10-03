@@ -73,8 +73,6 @@ export class Player {
     if (action === 'swat' && this.activeFly.type === 'normal') {
       this.score += this.activeFly.isGift ? 2 : 1;
       this.activeFly = null;
-    } else if (action === 'avoid' && this.activeFly.type === 'decoy') {
-      this.activeFly = null;
     }
   }
 
@@ -168,6 +166,7 @@ export class Player {
   drawFlySprite(x, y, isGift = false) {
     const { ctx } = this;
     const scale = isGift ? 1.6 : 1;
+    const bodyColor = isGift ? '#c9a227' : '#333';
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
     ctx.strokeStyle = 'rgba(80, 80, 80, 0.6)';
@@ -178,14 +177,43 @@ export class Player {
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = isGift ? '#c9a227' : '#333';
+    ctx.fillStyle = bodyColor;
     ctx.beginPath();
     ctx.ellipse(x, y, 10 * scale, 7 * scale, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    const headX = x;
+    const headY = y - 10 * scale;
+    const headRadius = 5 * scale;
+    ctx.beginPath();
+    ctx.arc(headX, headY, headRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    const eyeRadius = 2.6 * scale;
+    const eyeOffsetX = 2.8 * scale;
+    ctx.fillStyle = '#b71c1c';
+    ctx.beginPath();
+    ctx.arc(headX - eyeOffsetX, headY - 1 * scale, eyeRadius, 0, Math.PI * 2);
+    ctx.arc(headX + eyeOffsetX, headY - 1 * scale, eyeRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.beginPath();
+    ctx.arc(headX - eyeOffsetX + scale, headY - 2 * scale, eyeRadius * 0.35, 0, Math.PI * 2);
+    ctx.arc(headX + eyeOffsetX + scale, headY - 2 * scale, eyeRadius * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = bodyColor;
+    ctx.lineWidth = 1.5 * scale;
+    ctx.beginPath();
+    ctx.moveTo(headX, headY + headRadius * 0.5);
+    ctx.lineTo(headX, headY + headRadius * 0.5 + 5 * scale);
+    ctx.stroke();
   }
 
   drawBee(x, y) {
     const { ctx } = this;
+
     ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
     ctx.strokeStyle = 'rgba(80, 80, 80, 0.6)';
     ctx.lineWidth = 1;
@@ -195,15 +223,37 @@ export class Player {
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = '#fbc02d';
+    ctx.save();
     ctx.beginPath();
     ctx.ellipse(x, y, 12, 9, 0, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = '#fbc02d';
+    ctx.fillRect(x - 12, y - 9, 24, 18);
+    ctx.fillStyle = '#333';
+    for (let sx = x - 9; sx <= x + 9; sx += 8) {
+      ctx.fillRect(sx, y - 9, 4, 18);
+    }
+    ctx.restore();
+
+    const headX = x;
+    const headY = y - 11;
+    const headRadius = 5;
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(headX, headY, headRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#333';
-    ctx.fillRect(x - 10, y - 4, 4, 8);
-    ctx.fillRect(x - 2, y - 4, 4, 8);
-    ctx.fillRect(x + 6, y - 4, 4, 8);
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(headX - 2, headY - 1, 1.6, 0, Math.PI * 2);
+    ctx.arc(headX + 2, headY - 1, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#222';
+    ctx.beginPath();
+    ctx.arc(headX - 2, headY - 1, 0.8, 0, Math.PI * 2);
+    ctx.arc(headX + 2, headY - 1, 0.8, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   drawCharacter() {

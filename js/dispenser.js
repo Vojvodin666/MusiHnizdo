@@ -1,4 +1,3 @@
-const DECOY_CHANCE = 0.25;
 const GIFT_DURATION = 2.6;
 const CROSS_CHANCE = 0.2;
 
@@ -32,7 +31,7 @@ export class Dispenser {
 
     if (this.crossingPending[side]) {
       this.crossingPending[side] = false;
-      return this.regularFly(side, true);
+      return this.regularFly(true);
     }
 
     if (Math.random() < CROSS_CHANCE) {
@@ -40,14 +39,13 @@ export class Dispenser {
       return null;
     }
 
-    return this.regularFly(side, false);
+    return this.regularFly(false);
   }
 
-  regularFly(side, fromSibling) {
-    const isDecoy = side === 'right' && Math.random() < DECOY_CHANCE;
+  regularFly(fromSibling) {
     return {
-      type: isDecoy ? 'decoy' : 'normal',
-      duration: isDecoy ? 1.6 : 1.8,
+      type: 'normal',
+      duration: 1.8,
       fromSibling,
     };
   }

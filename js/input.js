@@ -4,7 +4,6 @@ export const KEY_BINDINGS = {
   },
   right: {
     swat: 'ArrowLeft',
-    avoid: 'ArrowRight',
   },
 };
 

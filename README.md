@@ -9,13 +9,14 @@ uprostřed a dávkovač je posílá tam, kde je zrovna volno — kdo plácá ryc
 mouchy častěji, kdo má mouchu pořád aktivní, čeká. Tím se obtížnost mezi sestrami
 samo vyvažuje, bez explicitního nastavování.
 
-- **Levá strana (4 roky):** 1 klávesa (mezerník), čisté časování — plácni, když je
-  moucha v zóně.
-- **Pravá strana (8 let):** 2 klávesy — plácnutí na mouchu, "nehýbej se" na
-  včelu/berušku, kterou se plácat nesmí.
+- **Levá strana (4 roky):** 1 klávesa (mezerník), čisté časování — plácni, když
+  moucha dosedne.
+- **Pravá strana (8 let):** 1 klávesa (←), stejná mechanika, jen rychlejší tempo.
 
-Kolo trvá 60 vteřin. Na konci žádné srovnávání skóre mezi sestrami — jen společná
-oslava podle celkového počtu chycených much.
+Mouchy přilétají pomalu a vlnitě na jednu ze tří pevných kytiček v pokoji; občas
+některá přeletí rovnou ke spoluhráčce. Kolo trvá 60 vteřin. Na konci žádné
+srovnávání skóre mezi sestrami — jen společná oslava podle celkového počtu
+chycených much.
 
 ## Ovládání
 
@@ -23,7 +24,6 @@ oslava podle celkového počtu chycených much.
 |--------|----------------|-------------|
 | Levá   | Plácnout       | Mezerník    |
 | Pravá  | Plácnout       | ←           |
-| Pravá  | Nehýbat se     | →           |
 
 ## Spuštění
 
